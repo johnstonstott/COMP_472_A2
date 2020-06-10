@@ -31,7 +31,7 @@ if not os.path.exists(csv_file):
     sys.exit(0)
 
 with open(csv_file, "r") as file:
-    print("Opening", csv_file, "and reading data... ", end="")
+    print(f"Opening {csv_file}, reading data, creating vocabulary, creating testing set... ", end="")
     reader = csv.reader(file)
 
     # Iterate through data set and add to the appropriate list depending on the year.
@@ -56,38 +56,58 @@ nb_of_ask_hn = functions.count_ask_hn_posts(vocabulary)
 nb_of_show_hn = functions.count_show_hn_posts(vocabulary)
 nb_of_poll = functions.count_poll_posts(vocabulary)
 
+# Create a sorted vocabulary for making the output files, sort by word alphabetically.
+vocabulary_sorted = sorted(vocabulary, key=lambda x: x.content)
+
 # Create model-2018.txt file.
 model_file = "model-2018.txt"
 if os.path.exists(model_file):
     print("The file", model_file, "already exists, so not creating a new one.")
 else:
     print("Creating model file... ", end="")
-
-    # TODO sort?
     count = 0
 
+    # Probabilities with 0.5 smoothing are calculated with the formula:
+    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5)
     with open(model_file, "w") as file:
-        for v in vocabulary:
+        for v in vocabulary_sorted:
             count += 1
+            count_str = str(count)
             word = v.content
-            freq_story = str(v.freq_story)
-            prob_story = str((freq_story + 0.5) / (nb_of_story + vocab_size * 0.5))
-            freq_ask_hn = str(v.freq_ask_hn)
-            prob_ask_hn = str((freq_ask_hn + 0.5) / (nb_of_ask_hn + vocab_size * 0.5))
-            freq_show_hn = str(v.freq_show_hn)
-            prob_show_hn = str((freq_show_hn + 0.5) / (nb_of_show_hn + vocab_size * 0.5))
-            freq_poll = str(v.freq_poll)
-            prob_poll = str((freq_poll + 0.5) / (nb_of_poll + vocab_size * 0.5))
-            file.write(str(count) + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  " +
-                       prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll +
-                       "\n")
+            freq_story = v.freq_story
+            prob_story = freq_story + 0.5 / (nb_of_story + vocab_size * 0.5)
+            freq_story = str(freq_story)
+            prob_story = str(prob_story)
+            freq_ask_hn = v.freq_ask_hn
+            prob_ask_hn = freq_ask_hn + 0.5 / (nb_of_ask_hn + vocab_size * 0.5)
+            freq_ask_hn = str(freq_ask_hn)
+            prob_ask_hn = str(prob_ask_hn)
+            freq_show_hn = v.freq_show_hn
+            prob_show_hn = freq_show_hn + 0.5 / (nb_of_show_hn + vocab_size * 0.5)
+            freq_show_hn = str(freq_show_hn)
+            prob_show_hn = str(prob_show_hn)
+            freq_poll = v.freq_poll
+            prob_poll = freq_poll + 0.5 / (nb_of_poll + vocab_size * 0.5)
+            freq_poll = str(freq_poll)
+            prob_poll = str(prob_poll)
 
-            # count, "  ", word, "  ", freq_story, "  ", prob_story, "  ", freq_ask_hn, "  ",
-            #                  prob_ask_hn, "  ", freq_show_hn, "  ", prob_show_hn, "  ", freq_poll, "  ", prob_poll)
-
-            # count, "  ", word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  " + prob_ask_hn + "  "
-            # + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll + "\n"
-
+            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
+                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
+                       + "\n")
 
     print("Done")
 print("Model file can be found in model-2018.txt\n")
+
+# Create vocabulary.txt file.
+vocab_file = "vocabulary.txt"
+if os.path.exists(vocab_file):
+    print("The file", vocab_file, "already exists, so not creating a new one.")
+else:
+    print("Creating vocabulary file... ", end="")
+
+    with open(vocab_file, "w") as file:
+        for v in vocabulary_sorted:
+            file.write(v.content + "\n")
+
+    print("Done")
+print("Model file can be found in vocabulary.txt\n")

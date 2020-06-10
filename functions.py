@@ -10,20 +10,29 @@ import word
 # Remove unwanted characters from beginning and end of string and then add them to a list.
 def clean_words(title):
     words = title.split()
-    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", ":", ".", "?", "!", "'", "’", ",", "“", "”", "–"]
+    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", "«", "»", " ", "‍‍‍", "   ", ":", ".", "?", "!", "&", "=", "@", "'",
+                   "‘", "’", "`", '"', "“", "”", ",", "–", "—", "-", "^", "/", "\\", "", "\n", "\t"]
     clean = []
 
     for w in words:
         string = w
+        word_clean = False
 
         if string in remove_word:
             continue
 
-        if string[0] in remove_word:
-            string = string[1:]
+        while word_clean is False:
+            if len(string) == 0:
+                break
 
-        if string[-1] in remove_word:
-            string = string[0:-1]
+            if string[0] in remove_word:
+                string = string[1:]
+
+            if len(string) > 0 and string[-1] in remove_word:
+                string = string[0:-1]
+
+            if len(string) > 0 and string[0] not in remove_word and string[-1] not in remove_word:
+                word_clean = True
 
         if len(string) == 0:
             continue
