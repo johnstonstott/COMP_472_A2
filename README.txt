@@ -12,4 +12,3 @@ Required Version
 
 Instructions
 ------------
-

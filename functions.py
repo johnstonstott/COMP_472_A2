@@ -151,9 +151,7 @@ def count_poll_posts(words):
     return total
 
 
-# Uses the model to determine the probability that a title belongs to a certain post type.
-def compute_score(title, model, post_type, type_count, total_count):
-    title_words = title.split()
+def extract_model_data(model):
     model_list = []
 
     # Read data from model file.
@@ -163,6 +161,13 @@ def compute_score(title, model, post_type, type_count, total_count):
     # Add each line into model_list.
     for c in contents:
         model_list.append(c.split())
+
+    return model_list
+
+
+# Uses the model to determine the probability that a title belongs to a certain post type.
+def compute_score(title, model_data, post_type, type_count, total_count):
+    title_words = title.split()
 
     # Score is calculated with the formula:
     # score(post_type) = log(P(post_type)) + log(P(w_1 | post_type)) + ... + log(P(w_n | post_type))
@@ -176,7 +181,7 @@ def compute_score(title, model, post_type, type_count, total_count):
     # This is the part of the equation:
     # log(P(w_1 | post_type)) + ... + log(P(w_n | post_type))
     for i in range(len(title_words)):
-        word_index = get_model_index(title_words[i], model_list)
+        word_index = get_model_index(title_words[i], model_data)
 
         # Word is not in our model, so ignore it.
         if word_index == -1:
@@ -185,13 +190,13 @@ def compute_score(title, model, post_type, type_count, total_count):
         prob_word_given_type = 0
 
         if post_type == "story":
-            prob_word_given_type = model_list[word_index][3]
+            prob_word_given_type = model_data[word_index][3]
         elif post_type == "ask_hn":
-            prob_word_given_type = model_list[word_index][5]
+            prob_word_given_type = model_data[word_index][5]
         elif post_type == "show_hn":
-            prob_word_given_type = model_list[word_index][7]
+            prob_word_given_type = model_data[word_index][7]
         elif post_type == "poll":
-            prob_word_given_type = model_list[word_index][9]
+            prob_word_given_type = model_data[word_index][9]
 
         prob_word_given_type = float(prob_word_given_type)
         score += np.log10(prob_word_given_type)

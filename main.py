@@ -143,8 +143,9 @@ baseline_file = "baseline-result.txt"
 if os.path.exists(baseline_file):
     print("The file", baseline_file, "already exists, so not creating a new one.")
 else:
-    print("Classifying testing set and creating baseline result file...", end="")
+    print("Classifying testing set and creating baseline result file... ", end="")
     count = 0
+    model_list = functions.extract_model_data(model_file)
 
     with open(baseline_file, "w") as file:
         for key in testing_set:
@@ -152,10 +153,10 @@ else:
             post_title = key
 
             # Compute the probability of each post type.
-            score_story = functions.compute_score(key, model_file, "story", count_story_titles, count_total_titles)
-            score_ask_hn = functions.compute_score(key, model_file, "ask_hn", count_story_titles, count_total_titles)
-            score_show_hn = functions.compute_score(key, model_file, "show_hn", count_story_titles, count_total_titles)
-            score_poll = functions.compute_score(key, model_file, "poll", count_story_titles, count_total_titles)
+            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
+            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_story_titles, count_total_titles)
+            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_story_titles, count_total_titles)
+            score_poll = functions.compute_score(key, model_list, "poll", count_story_titles, count_total_titles)
 
             # Determine which probability is the highest.
             score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
