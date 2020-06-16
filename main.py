@@ -195,4 +195,10 @@ else:
 
 print("Baseline result file can be found in baseline-result.txt\n")
 
-print("TASK 2 COMPETE\n")
+print("TASK 2 COMPLETE\n")
+
+# Task 3: Experiments with the classifier
+# Task 3.1: Stop-word filtering.
+print("STARTING TASK 3.1\n")
+
+print("TASK 3.1 COMPLETE\n")
