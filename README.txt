@@ -4,6 +4,7 @@ For COMP 472 Section ABIX – Summer 2020
 
 Required Packages
 -----------------
+- Numpy
 
 Required Version
 ----------------
