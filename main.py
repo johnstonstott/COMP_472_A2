@@ -52,9 +52,9 @@ with open(csv_file, "r") as file:
             if post_type == "story":
                 count_story_titles += 1
             elif post_type == "ask_hn":
-                count_story_titles += 1
+                count_ask_hn_titles += 1
             elif post_type == "show_hn":
-                count_story_titles += 1
+                count_show_hn_titles += 1
             elif post_type == "poll":
                 count_poll_titles += 1
 
@@ -154,9 +154,10 @@ else:
 
             # Compute the probability of each post type.
             score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
-            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_story_titles, count_total_titles)
-            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_story_titles, count_total_titles)
-            score_poll = functions.compute_score(key, model_list, "poll", count_story_titles, count_total_titles)
+            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
+            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
+                                                    count_total_titles)
+            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
 
             # Determine which probability is the highest.
             score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
@@ -200,5 +201,127 @@ print("TASK 2 COMPLETE\n")
 # Task 3: Experiments with the classifier
 # Task 3.1: Stop-word filtering.
 print("STARTING TASK 3.1\n")
+
+# This is using the same process as in tasks 1 and 2 so view the comments there to see what's going on.
+vocabulary_31 = []
+
+stopwords_file = "stopwords.txt"
+stopwords = functions.extract_stopwords(stopwords_file)
+
+# Creating new vocabulary using the one defined in task 1.
+print(f"Reading existing vocabulary, removing stop words, creating new vocabulary... ", end="")
+
+# Check if each one is equivalent to any stopwords, if so then don't include it in the new vocabulary.
+for i in range(len(vocabulary_sorted)):
+    if vocabulary_sorted[i].content not in stopwords:
+        vocabulary_31.append(vocabulary_sorted[i])
+
+print("Done\n")
+
+# How many words are in filtered vocabulary.
+vocab_size_31 = len(vocabulary_31)
+
+# These are how many words are in each post category, used for calculating probability in model.
+count_story_words = functions.count_story_posts(vocabulary_31)
+count_ask_hn_words = functions.count_ask_hn_posts(vocabulary_31)
+count_show_hn_words = functions.count_show_hn_posts(vocabulary_31)
+count_poll_words = functions.count_poll_posts(vocabulary_31)
+
+model_file_31 = "stopword-model.txt"
+if os.path.exists(model_file_31):
+    print("The file", model_file_31, "already exists, so not creating a new one.")
+else:
+    print("Creating model file... ", end="")
+    count = 0
+
+    # Probabilities with 0.5 smoothing are calculated with the formula:
+    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
+    with open(model_file_31, "w") as file:
+        for v in vocabulary_31:
+            count += 1
+            count_str = str(count)
+            word = v.content
+            freq_story = v.freq_story
+            prob_story = freq_story + 0.5 / (count_story_words + vocab_size_31 * 0.5)
+            freq_story = str(freq_story)
+            prob_story = str(prob_story)
+            freq_ask_hn = v.freq_ask_hn
+            prob_ask_hn = freq_ask_hn + 0.5 / (count_ask_hn_words + vocab_size_31 * 0.5)
+            freq_ask_hn = str(freq_ask_hn)
+            prob_ask_hn = str(prob_ask_hn)
+            freq_show_hn = v.freq_show_hn
+            prob_show_hn = freq_show_hn + 0.5 / (count_show_hn_words + vocab_size_31 * 0.5)
+            freq_show_hn = str(freq_show_hn)
+            prob_show_hn = str(prob_show_hn)
+            freq_poll = v.freq_poll
+            prob_poll = freq_poll + 0.5 / (count_poll_words + vocab_size_31 * 0.5)
+            freq_poll = str(freq_poll)
+            prob_poll = str(prob_poll)
+
+            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
+                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
+                       + "\n")
+
+    print("Done")
+print("Model file can be found in", model_file_31, "\n")
+
+# Use ML classifier to test dataset.
+baseline_file_31 = "stopword-result.txt"
+
+if os.path.exists(baseline_file_31):
+    print("The file", baseline_file_31, "already exists, so not creating a new one.")
+else:
+    print("Classifying testing set and creating stopword result file... ", end="")
+    count = 0
+    model_list = functions.extract_model_data(model_file_31)
+
+    with open(baseline_file_31, "w") as file:
+        for key in testing_set:
+            count += 1
+            post_title = key
+
+            # Compute the probability of each post type.
+            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
+            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
+            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
+                                                    count_total_titles)
+            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
+
+            # Determine which post type has the highest probability.
+            score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
+            predicted_type = ""
+
+            if score_max == score_story:
+                predicted_type = "story"
+            elif score_max == score_ask_hn:
+                predicted_type = "ask_hn"
+            elif score_max == score_show_hn:
+                predicted_type = "show_hn"
+            elif score_max == score_poll:
+                predicted_type = "poll"
+
+            # Compare and see if the prediction was correct.
+            actual_type = testing_set[key]
+            prediction_result = ""
+
+            if actual_type == predicted_type:
+                prediction_result = "right"
+            else:
+                prediction_result = "wrong"
+
+            # Write to the file.
+            count_str = str(count)
+            score_story = str(score_story)
+            score_ask_hn = str(score_ask_hn)
+            score_show_hn = str(score_show_hn)
+            score_poll = str(score_poll)
+
+            file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
+                       + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
+                       + prediction_result + "\n")
+
+    print("Done")
+
+print("Stopword result file can be found in", baseline_file_31, "\n")
 
 print("TASK 3.1 COMPLETE\n")

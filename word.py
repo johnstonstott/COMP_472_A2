@@ -12,9 +12,11 @@ class Word:
         self.freq_ask_hn = 0
         self.freq_show_hn = 0
         self.freq_poll = 0
+        self.freq_total = 0
 
     def __str__(self):
-        return f"{self.content} {self.freq_story} {self.freq_ask_hn} {self.freq_show_hn} {self.freq_poll}"
+        return f"{self.content} - {self.freq_story} {self.freq_ask_hn} {self.freq_show_hn} {self.freq_poll} - " \
+               f"{self.freq_total}"
 
     # Increments the correct frequency counter based on the post type.
     def increment_count(self, post_type):
@@ -26,3 +28,5 @@ class Word:
             self.freq_show_hn += 1
         elif post_type == "poll":
             self.freq_poll += 1
+
+        self.freq_total += 1

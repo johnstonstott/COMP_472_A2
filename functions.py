@@ -4,6 +4,8 @@
 # For COMP 472 Section ABIX – Summer 2020
 # --------------------------------------------------------
 
+import math
+
 import numpy as np
 
 import word
@@ -151,6 +153,7 @@ def count_poll_posts(words):
     return total
 
 
+# Reads the model file and produces a 2D list with all of its data.
 def extract_model_data(model):
     model_list = []
 
@@ -165,6 +168,20 @@ def extract_model_data(model):
     return model_list
 
 
+# Creates and returns a list of all words in the stopwords file.
+def extract_stopwords(stopwords):
+    stopwords_list = []
+
+    # Read and append words to list.
+    with open(stopwords, "r") as file:
+        contents = file.readlines()
+
+    for c in contents:
+        stopwords_list.append(c.strip())
+
+    return stopwords_list
+
+
 # Uses the model to determine the probability that a title belongs to a certain post type.
 def compute_score(title, model_data, post_type, type_count, total_count):
     title_words = title.split()
@@ -175,6 +192,12 @@ def compute_score(title, model_data, post_type, type_count, total_count):
     # This is the part of the equation:
     # log(P(post_type))
     score = 0.0
+
+    # Avoid division by 0 error in log10 if there are no instances of a certain post type.
+    # Return the lowest possible probability.
+    if type_count == 0:
+        return float(-math.inf)
+
     prob_type = np.log10(type_count / total_count)
     score += prob_type
 
