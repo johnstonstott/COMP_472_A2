@@ -83,7 +83,7 @@ vocabulary_sorted = sorted(vocabulary, key=lambda x: x.content)
 # Create model-2018.txt file.
 model_file = "model-2018.txt"
 if os.path.exists(model_file):
-    print("The file", model_file, "already exists, so not creating a new one.")
+    print("The file", model_file, "already exists, so not creating a new one")
 else:
     print("Creating model file... ", end="")
     count = 0
@@ -96,19 +96,19 @@ else:
             count_str = str(count)
             word = v.content
             freq_story = v.freq_story
-            prob_story = freq_story + 0.5 / (count_story_words + vocab_size * 0.5)
+            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size * 0.5)
             freq_story = str(freq_story)
             prob_story = str(prob_story)
             freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = freq_ask_hn + 0.5 / (count_ask_hn_words + vocab_size * 0.5)
+            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size * 0.5)
             freq_ask_hn = str(freq_ask_hn)
             prob_ask_hn = str(prob_ask_hn)
             freq_show_hn = v.freq_show_hn
-            prob_show_hn = freq_show_hn + 0.5 / (count_show_hn_words + vocab_size * 0.5)
+            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size * 0.5)
             freq_show_hn = str(freq_show_hn)
             prob_show_hn = str(prob_show_hn)
             freq_poll = v.freq_poll
-            prob_poll = freq_poll + 0.5 / (count_poll_words + vocab_size * 0.5)
+            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size * 0.5)
             freq_poll = str(freq_poll)
             prob_poll = str(prob_poll)
 
@@ -122,7 +122,7 @@ print("Model file can be found in model-2018.txt\n")
 # Create vocabulary.txt file.
 vocab_file = "vocabulary.txt"
 if os.path.exists(vocab_file):
-    print("The file", vocab_file, "already exists, so not creating a new one.")
+    print("The file", vocab_file, "already exists, so not creating a new one")
 else:
     print("Creating vocabulary file... ", end="")
 
@@ -141,7 +141,7 @@ print("STARTING TASK 2\n")
 # Create baseline-result.txt file.
 baseline_file = "baseline-result.txt"
 if os.path.exists(baseline_file):
-    print("The file", baseline_file, "already exists, so not creating a new one.")
+    print("The file", baseline_file, "already exists, so not creating a new one")
 else:
     print("Classifying testing set and creating baseline result file... ", end="")
     count = 0
@@ -229,7 +229,7 @@ count_poll_words = functions.count_poll_posts(vocabulary_31)
 
 model_file_31 = "stopword-model.txt"
 if os.path.exists(model_file_31):
-    print("The file", model_file_31, "already exists, so not creating a new one.")
+    print("The file", model_file_31, "already exists, so not creating a new one")
 else:
     print("Creating model file... ", end="")
     count = 0
@@ -242,19 +242,19 @@ else:
             count_str = str(count)
             word = v.content
             freq_story = v.freq_story
-            prob_story = freq_story + 0.5 / (count_story_words + vocab_size_31 * 0.5)
+            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size_31 * 0.5)
             freq_story = str(freq_story)
             prob_story = str(prob_story)
             freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = freq_ask_hn + 0.5 / (count_ask_hn_words + vocab_size_31 * 0.5)
+            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size_31 * 0.5)
             freq_ask_hn = str(freq_ask_hn)
             prob_ask_hn = str(prob_ask_hn)
             freq_show_hn = v.freq_show_hn
-            prob_show_hn = freq_show_hn + 0.5 / (count_show_hn_words + vocab_size_31 * 0.5)
+            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size_31 * 0.5)
             freq_show_hn = str(freq_show_hn)
             prob_show_hn = str(prob_show_hn)
             freq_poll = v.freq_poll
-            prob_poll = freq_poll + 0.5 / (count_poll_words + vocab_size_31 * 0.5)
+            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size_31 * 0.5)
             freq_poll = str(freq_poll)
             prob_poll = str(prob_poll)
 
@@ -269,7 +269,7 @@ print("Model file can be found in", model_file_31, "\n")
 baseline_file_31 = "stopword-result.txt"
 
 if os.path.exists(baseline_file_31):
-    print("The file", baseline_file_31, "already exists, so not creating a new one.")
+    print("The file", baseline_file_31, "already exists, so not creating a new one")
 else:
     print("Classifying testing set and creating stopword result file... ", end="")
     count = 0
@@ -325,3 +325,10 @@ else:
 print("Stopword result file can be found in", baseline_file_31, "\n")
 
 print("TASK 3.1 COMPLETE\n")
+
+# Task 3.2: Word length filtering.
+print("STARTING TASK 3.2")
+
+
+
+print("TASK 3.2 COMPLETE")
