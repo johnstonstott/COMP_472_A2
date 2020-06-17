@@ -83,7 +83,7 @@ vocabulary_sorted = sorted(vocabulary, key=lambda x: x.content)
 # Create model-2018.txt file.
 model_file = "model-2018.txt"
 if os.path.exists(model_file):
-    print("The file", model_file, "already exists, so not creating a new one.")
+    print("The file", model_file, "already exists, so not creating a new one")
 else:
     print("Creating model file... ", end="")
     count = 0
@@ -96,19 +96,19 @@ else:
             count_str = str(count)
             word = v.content
             freq_story = v.freq_story
-            prob_story = freq_story + 0.5 / (count_story_words + vocab_size * 0.5)
+            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size * 0.5)
             freq_story = str(freq_story)
             prob_story = str(prob_story)
             freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = freq_ask_hn + 0.5 / (count_ask_hn_words + vocab_size * 0.5)
+            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size * 0.5)
             freq_ask_hn = str(freq_ask_hn)
             prob_ask_hn = str(prob_ask_hn)
             freq_show_hn = v.freq_show_hn
-            prob_show_hn = freq_show_hn + 0.5 / (count_show_hn_words + vocab_size * 0.5)
+            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size * 0.5)
             freq_show_hn = str(freq_show_hn)
             prob_show_hn = str(prob_show_hn)
             freq_poll = v.freq_poll
-            prob_poll = freq_poll + 0.5 / (count_poll_words + vocab_size * 0.5)
+            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size * 0.5)
             freq_poll = str(freq_poll)
             prob_poll = str(prob_poll)
 
@@ -122,7 +122,7 @@ print("Model file can be found in model-2018.txt\n")
 # Create vocabulary.txt file.
 vocab_file = "vocabulary.txt"
 if os.path.exists(vocab_file):
-    print("The file", vocab_file, "already exists, so not creating a new one.")
+    print("The file", vocab_file, "already exists, so not creating a new one")
 else:
     print("Creating vocabulary file... ", end="")
 
@@ -141,7 +141,7 @@ print("STARTING TASK 2\n")
 # Create baseline-result.txt file.
 baseline_file = "baseline-result.txt"
 if os.path.exists(baseline_file):
-    print("The file", baseline_file, "already exists, so not creating a new one.")
+    print("The file", baseline_file, "already exists, so not creating a new one")
 else:
     print("Classifying testing set and creating baseline result file... ", end="")
     count = 0
@@ -198,18 +198,18 @@ print("Baseline result file can be found in baseline-result.txt\n")
 
 print("TASK 2 COMPLETE\n")
 
-# Task 3: Experiments with the classifier
+# Task 3: Experiments with the classifier.
 # Task 3.1: Stop-word filtering.
 print("STARTING TASK 3.1\n")
 
-# This is using the same process as in tasks 1 and 2 so view the comments there to see what's going on.
+# Stores Word objects that fit the criteria of task 3.1.
 vocabulary_31 = []
 
 stopwords_file = "stopwords.txt"
 stopwords = functions.extract_stopwords(stopwords_file)
 
 # Creating new vocabulary using the one defined in task 1.
-print(f"Reading existing vocabulary, removing stop words, creating new vocabulary... ", end="")
+print("Reading existing vocabulary, removing stop words, creating new vocabulary... ", end="")
 
 # Check if each one is equivalent to any stopwords, if so then don't include it in the new vocabulary.
 for i in range(len(vocabulary_sorted)):
@@ -229,7 +229,7 @@ count_poll_words = functions.count_poll_posts(vocabulary_31)
 
 model_file_31 = "stopword-model.txt"
 if os.path.exists(model_file_31):
-    print("The file", model_file_31, "already exists, so not creating a new one.")
+    print("The file", model_file_31, "already exists, so not creating a new one")
 else:
     print("Creating model file... ", end="")
     count = 0
@@ -242,19 +242,19 @@ else:
             count_str = str(count)
             word = v.content
             freq_story = v.freq_story
-            prob_story = freq_story + 0.5 / (count_story_words + vocab_size_31 * 0.5)
+            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size_31 * 0.5)
             freq_story = str(freq_story)
             prob_story = str(prob_story)
             freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = freq_ask_hn + 0.5 / (count_ask_hn_words + vocab_size_31 * 0.5)
+            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size_31 * 0.5)
             freq_ask_hn = str(freq_ask_hn)
             prob_ask_hn = str(prob_ask_hn)
             freq_show_hn = v.freq_show_hn
-            prob_show_hn = freq_show_hn + 0.5 / (count_show_hn_words + vocab_size_31 * 0.5)
+            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size_31 * 0.5)
             freq_show_hn = str(freq_show_hn)
             prob_show_hn = str(prob_show_hn)
             freq_poll = v.freq_poll
-            prob_poll = freq_poll + 0.5 / (count_poll_words + vocab_size_31 * 0.5)
+            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size_31 * 0.5)
             freq_poll = str(freq_poll)
             prob_poll = str(prob_poll)
 
@@ -269,7 +269,7 @@ print("Model file can be found in", model_file_31, "\n")
 baseline_file_31 = "stopword-result.txt"
 
 if os.path.exists(baseline_file_31):
-    print("The file", baseline_file_31, "already exists, so not creating a new one.")
+    print("The file", baseline_file_31, "already exists, so not creating a new one")
 else:
     print("Classifying testing set and creating stopword result file... ", end="")
     count = 0
@@ -321,7 +321,131 @@ else:
                        + prediction_result + "\n")
 
     print("Done")
-
 print("Stopword result file can be found in", baseline_file_31, "\n")
 
 print("TASK 3.1 COMPLETE\n")
+
+# Task 3.2: Word length filtering.
+print("STARTING TASK 3.2\n")
+
+# Stores Word objects from vocabulary fitting the criteria of task 3.2.
+vocabulary_32 = []
+min_length = 2
+max_length = 9
+
+print("Reading existing vocabulary, removing words outside of length limits, creating new vocabulary... ", end="")
+
+# Check word lengths and only add ones within the accepted range.
+for i in range(len(vocabulary_sorted)):
+    if min_length < len(vocabulary_sorted[i].content) < max_length:
+        vocabulary_32.append(vocabulary_sorted[i])
+
+print("Done")
+
+# Count of words in filtered vocabulary.
+vocab_size_32 = len(vocabulary_32)
+
+# Number of words per category for use in probability calculations.
+count_story_words = functions.count_story_posts(vocabulary_32)
+count_ask_hn_words = functions.count_ask_hn_posts(vocabulary_32)
+count_show_hn_words = functions.count_show_hn_posts(vocabulary_32)
+count_poll_words = functions.count_poll_posts(vocabulary_32)
+
+# Create the model file.
+model_file_32 = "wordlength-model.txt"
+if os.path.exists(model_file_32):
+    print("The file", model_file_32, "already exists, so not creating a new one")
+else:
+    print("Creating model file... ", end="")
+    count = 0
+
+    # Probabilities with 0.5 smoothing are calculated with the formula:
+    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
+    with open(model_file_32, "w") as file:
+        for v in vocabulary_32:
+            count += 1
+            count_str = str(count)
+            word = v.content
+            freq_story = v.freq_story
+            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size_32 * 0.5)
+            freq_story = str(freq_story)
+            prob_story = str(prob_story)
+            freq_ask_hn = v.freq_ask_hn
+            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size_32 * 0.5)
+            freq_ask_hn = str(freq_ask_hn)
+            prob_ask_hn = str(prob_ask_hn)
+            freq_show_hn = v.freq_show_hn
+            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size_32 * 0.5)
+            freq_show_hn = str(freq_show_hn)
+            prob_show_hn = str(prob_show_hn)
+            freq_poll = v.freq_poll
+            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size_32 * 0.5)
+            freq_poll = str(freq_poll)
+            prob_poll = str(prob_poll)
+
+            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
+                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
+                       + "\n")
+
+    print("Done")
+print("Model file can be found in", model_file_32, "\n")
+
+# Classify data from testing set.
+baseline_file_32 = "wordlength-result.txt"
+
+if os.path.exists(baseline_file_32):
+    print("The file", baseline_file_32, "already exists, so not creating a new one")
+else:
+    print("Classifying testing set and creating wordlength result file... ", end="")
+    count = 0
+    model_list = functions.extract_model_data(model_file_32)
+
+    with open(baseline_file_32, "w") as file:
+        for key in testing_set:
+            count += 1
+            post_title = key
+
+            # Compute probability of each post type.
+            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
+            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
+            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
+                                                    count_total_titles)
+            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
+
+            # Determine which score is highest.
+            score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
+            predicted_type = ""
+
+            if score_max == score_story:
+                predicted_type = "story"
+            elif score_max == score_ask_hn:
+                predicted_type = "ask_hn"
+            elif score_max == score_show_hn:
+                predicted_type = "show_hn"
+            elif score_max == score_poll:
+                predicted_type = "poll"
+
+            # Compare and see if prediction was correct.
+            actual_type = testing_set[key]
+            prediction_result = ""
+
+            if actual_type == predicted_type:
+                prediction_result = "right"
+            else:
+                prediction_result = "wrong"
+
+            # Write to file.
+            count_str = str(count)
+            score_story = str(score_story)
+            score_ask_hn = str(score_ask_hn)
+            score_show_hn = str(score_show_hn)
+            score_poll = str(score_poll)
+
+            file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
+                       + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
+                       + prediction_result + "\n")
+
+    print("Done")
+print("Wordlength result file can be found in", baseline_file_32, "\n")
+
+print("TASK 3.2 COMPLETE")
