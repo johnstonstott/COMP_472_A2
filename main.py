@@ -13,8 +13,24 @@ import csv
 import os
 import sys
 
+from matplotlib import pyplot as plt
+
 import functions
 import word
+
+# x = ["freq = 1", "freq ≤ 5", "freq ≤ 10", "freq ≤ 15", "freq ≤ 20"]
+# y_1 = [60, 70, 80, 90, 100]
+# y_2 = [50, 55, 60, 65, 70]
+# y_3 = [90, 95, 80, 85, 100]
+# y_4 = [10, 20, 30, 40, 70]
+# plt.plot(x, y_1, marker="o", label="one")
+# plt.plot(x, y_2, marker="o", label="two")
+# plt.plot(x, y_3, marker="o", label="three")
+# plt.plot(x, y_4, marker="o", label="four")
+# plt.legend(loc="upper left")
+# plt.xlabel("X's")
+# plt.ylabel("Y's")
+# plt.show()
 
 # Task 1: Extract data and build model.
 print("STARTING TASK 1\n")
@@ -65,59 +81,12 @@ with open(csv_file, "r") as file:
 
     print("Done\n")
 
-# count_total_titles is the total number of posts in the training set
-count_total_titles = count_story_titles + count_ask_hn_titles + count_show_hn_titles + count_poll_titles
-
-# vocab_size is number of unique words.
-vocab_size = len(vocabulary)
-
-# These are how many words are in each post category, used for calculating probability in model.
-count_story_words = functions.count_story_posts(vocabulary)
-count_ask_hn_words = functions.count_ask_hn_posts(vocabulary)
-count_show_hn_words = functions.count_show_hn_posts(vocabulary)
-count_poll_words = functions.count_poll_posts(vocabulary)
-
 # Create a sorted vocabulary for making the output files, sort by word alphabetically.
 vocabulary_sorted = sorted(vocabulary, key=lambda x: x.content)
 
 # Create model-2018.txt file.
 model_file = "model-2018.txt"
-if os.path.exists(model_file):
-    print("The file", model_file, "already exists, so not creating a new one")
-else:
-    print("Creating model file... ", end="")
-    count = 0
-
-    # Probabilities with 0.5 smoothing are calculated with the formula:
-    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
-    with open(model_file, "w") as file:
-        for v in vocabulary_sorted:
-            count += 1
-            count_str = str(count)
-            word = v.content
-            freq_story = v.freq_story
-            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size * 0.5)
-            freq_story = str(freq_story)
-            prob_story = str(prob_story)
-            freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size * 0.5)
-            freq_ask_hn = str(freq_ask_hn)
-            prob_ask_hn = str(prob_ask_hn)
-            freq_show_hn = v.freq_show_hn
-            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size * 0.5)
-            freq_show_hn = str(freq_show_hn)
-            prob_show_hn = str(prob_show_hn)
-            freq_poll = v.freq_poll
-            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size * 0.5)
-            freq_poll = str(freq_poll)
-            prob_poll = str(prob_poll)
-
-            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
-                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
-                       + "\n")
-
-    print("Done")
-print("Model file can be found in model-2018.txt\n")
+functions.create_model_file(model_file, vocabulary_sorted)
 
 # Create vocabulary.txt file.
 vocab_file = "vocabulary.txt"
@@ -139,62 +108,9 @@ print("TASK 1 COMPLETE\n")
 print("STARTING TASK 2\n")
 
 # Create baseline-result.txt file.
-baseline_file = "baseline-result.txt"
-if os.path.exists(baseline_file):
-    print("The file", baseline_file, "already exists, so not creating a new one")
-else:
-    print("Classifying testing set and creating baseline result file... ", end="")
-    count = 0
-    model_list = functions.extract_model_data(model_file)
-
-    with open(baseline_file, "w") as file:
-        for key in testing_set:
-            count += 1
-            post_title = key
-
-            # Compute the probability of each post type.
-            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
-            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
-            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
-                                                    count_total_titles)
-            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
-
-            # Determine which probability is the highest.
-            score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
-            predicted_type = ""
-
-            if score_max == score_story:
-                predicted_type = "story"
-            elif score_max == score_ask_hn:
-                predicted_type = "ask_hn"
-            elif score_max == score_show_hn:
-                predicted_type = "show_hn"
-            elif score_max == score_poll:
-                predicted_type = "poll"
-
-            # Compare and see if the prediction was correct.
-            actual_type = testing_set[key]
-            prediction_result = ""
-
-            if actual_type == predicted_type:
-                prediction_result = "right"
-            else:
-                prediction_result = "wrong"
-
-            # Use all the information above and write to the file.
-            count_str = str(count)
-            score_story = str(score_story)
-            score_ask_hn = str(score_ask_hn)
-            score_show_hn = str(score_show_hn)
-            score_poll = str(score_poll)
-
-            file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
-                       + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
-                       + prediction_result + "\n")
-
-    print("Done")
-
-print("Baseline result file can be found in baseline-result.txt\n")
+result_file = "baseline-result.txt"
+functions.create_result_file(result_file, model_file, testing_set, count_story_titles, count_ask_hn_titles,
+                             count_show_hn_titles, count_poll_titles)
 
 print("TASK 2 COMPLETE\n")
 
@@ -218,110 +134,13 @@ for i in range(len(vocabulary_sorted)):
 
 print("Done\n")
 
-# How many words are in filtered vocabulary.
-vocab_size_31 = len(vocabulary_31)
-
-# These are how many words are in each post category, used for calculating probability in model.
-count_story_words = functions.count_story_posts(vocabulary_31)
-count_ask_hn_words = functions.count_ask_hn_posts(vocabulary_31)
-count_show_hn_words = functions.count_show_hn_posts(vocabulary_31)
-count_poll_words = functions.count_poll_posts(vocabulary_31)
-
 model_file_31 = "stopword-model.txt"
-if os.path.exists(model_file_31):
-    print("The file", model_file_31, "already exists, so not creating a new one")
-else:
-    print("Creating model file... ", end="")
-    count = 0
-
-    # Probabilities with 0.5 smoothing are calculated with the formula:
-    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
-    with open(model_file_31, "w") as file:
-        for v in vocabulary_31:
-            count += 1
-            count_str = str(count)
-            word = v.content
-            freq_story = v.freq_story
-            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size_31 * 0.5)
-            freq_story = str(freq_story)
-            prob_story = str(prob_story)
-            freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size_31 * 0.5)
-            freq_ask_hn = str(freq_ask_hn)
-            prob_ask_hn = str(prob_ask_hn)
-            freq_show_hn = v.freq_show_hn
-            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size_31 * 0.5)
-            freq_show_hn = str(freq_show_hn)
-            prob_show_hn = str(prob_show_hn)
-            freq_poll = v.freq_poll
-            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size_31 * 0.5)
-            freq_poll = str(freq_poll)
-            prob_poll = str(prob_poll)
-
-            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
-                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
-                       + "\n")
-
-    print("Done")
-print("Model file can be found in", model_file_31, "\n")
+functions.create_model_file(model_file_31, vocabulary_31)
 
 # Use ML classifier to test dataset.
-baseline_file_31 = "stopword-result.txt"
-
-if os.path.exists(baseline_file_31):
-    print("The file", baseline_file_31, "already exists, so not creating a new one")
-else:
-    print("Classifying testing set and creating stopword result file... ", end="")
-    count = 0
-    model_list = functions.extract_model_data(model_file_31)
-
-    with open(baseline_file_31, "w") as file:
-        for key in testing_set:
-            count += 1
-            post_title = key
-
-            # Compute the probability of each post type.
-            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
-            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
-            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
-                                                    count_total_titles)
-            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
-
-            # Determine which post type has the highest probability.
-            score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
-            predicted_type = ""
-
-            if score_max == score_story:
-                predicted_type = "story"
-            elif score_max == score_ask_hn:
-                predicted_type = "ask_hn"
-            elif score_max == score_show_hn:
-                predicted_type = "show_hn"
-            elif score_max == score_poll:
-                predicted_type = "poll"
-
-            # Compare and see if the prediction was correct.
-            actual_type = testing_set[key]
-            prediction_result = ""
-
-            if actual_type == predicted_type:
-                prediction_result = "right"
-            else:
-                prediction_result = "wrong"
-
-            # Write to the file.
-            count_str = str(count)
-            score_story = str(score_story)
-            score_ask_hn = str(score_ask_hn)
-            score_show_hn = str(score_show_hn)
-            score_poll = str(score_poll)
-
-            file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
-                       + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
-                       + prediction_result + "\n")
-
-    print("Done")
-print("Stopword result file can be found in", baseline_file_31, "\n")
+result_file_31 = "stopword-result.txt"
+functions.create_result_file(result_file_31, model_file_31, testing_set, count_story_titles, count_ask_hn_titles,
+                             count_show_hn_titles, count_poll_titles)
 
 print("TASK 3.1 COMPLETE\n")
 
@@ -340,112 +159,15 @@ for i in range(len(vocabulary_sorted)):
     if min_length < len(vocabulary_sorted[i].content) < max_length:
         vocabulary_32.append(vocabulary_sorted[i])
 
-print("Done")
-
-# Count of words in filtered vocabulary.
-vocab_size_32 = len(vocabulary_32)
-
-# Number of words per category for use in probability calculations.
-count_story_words = functions.count_story_posts(vocabulary_32)
-count_ask_hn_words = functions.count_ask_hn_posts(vocabulary_32)
-count_show_hn_words = functions.count_show_hn_posts(vocabulary_32)
-count_poll_words = functions.count_poll_posts(vocabulary_32)
+print("Done\n")
 
 # Create the model file.
 model_file_32 = "wordlength-model.txt"
-if os.path.exists(model_file_32):
-    print("The file", model_file_32, "already exists, so not creating a new one")
-else:
-    print("Creating model file... ", end="")
-    count = 0
-
-    # Probabilities with 0.5 smoothing are calculated with the formula:
-    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
-    with open(model_file_32, "w") as file:
-        for v in vocabulary_32:
-            count += 1
-            count_str = str(count)
-            word = v.content
-            freq_story = v.freq_story
-            prob_story = (freq_story + 0.5) / (count_story_words + vocab_size_32 * 0.5)
-            freq_story = str(freq_story)
-            prob_story = str(prob_story)
-            freq_ask_hn = v.freq_ask_hn
-            prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size_32 * 0.5)
-            freq_ask_hn = str(freq_ask_hn)
-            prob_ask_hn = str(prob_ask_hn)
-            freq_show_hn = v.freq_show_hn
-            prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size_32 * 0.5)
-            freq_show_hn = str(freq_show_hn)
-            prob_show_hn = str(prob_show_hn)
-            freq_poll = v.freq_poll
-            prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size_32 * 0.5)
-            freq_poll = str(freq_poll)
-            prob_poll = str(prob_poll)
-
-            file.write(count_str + "  " + word + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn + "  "
-                       + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  " + prob_poll
-                       + "\n")
-
-    print("Done")
-print("Model file can be found in", model_file_32, "\n")
+functions.create_model_file(model_file_32, vocabulary_32)
 
 # Classify data from testing set.
-baseline_file_32 = "wordlength-result.txt"
-
-if os.path.exists(baseline_file_32):
-    print("The file", baseline_file_32, "already exists, so not creating a new one")
-else:
-    print("Classifying testing set and creating wordlength result file... ", end="")
-    count = 0
-    model_list = functions.extract_model_data(model_file_32)
-
-    with open(baseline_file_32, "w") as file:
-        for key in testing_set:
-            count += 1
-            post_title = key
-
-            # Compute probability of each post type.
-            score_story = functions.compute_score(key, model_list, "story", count_story_titles, count_total_titles)
-            score_ask_hn = functions.compute_score(key, model_list, "ask_hn", count_ask_hn_titles, count_total_titles)
-            score_show_hn = functions.compute_score(key, model_list, "show_hn", count_show_hn_titles,
-                                                    count_total_titles)
-            score_poll = functions.compute_score(key, model_list, "poll", count_poll_titles, count_total_titles)
-
-            # Determine which score is highest.
-            score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
-            predicted_type = ""
-
-            if score_max == score_story:
-                predicted_type = "story"
-            elif score_max == score_ask_hn:
-                predicted_type = "ask_hn"
-            elif score_max == score_show_hn:
-                predicted_type = "show_hn"
-            elif score_max == score_poll:
-                predicted_type = "poll"
-
-            # Compare and see if prediction was correct.
-            actual_type = testing_set[key]
-            prediction_result = ""
-
-            if actual_type == predicted_type:
-                prediction_result = "right"
-            else:
-                prediction_result = "wrong"
-
-            # Write to file.
-            count_str = str(count)
-            score_story = str(score_story)
-            score_ask_hn = str(score_ask_hn)
-            score_show_hn = str(score_show_hn)
-            score_poll = str(score_poll)
-
-            file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
-                       + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
-                       + prediction_result + "\n")
-
-    print("Done")
-print("Wordlength result file can be found in", baseline_file_32, "\n")
+result_file_32 = "wordlength-result.txt"
+functions.create_result_file(result_file_32, model_file_32, testing_set, count_story_titles, count_ask_hn_titles,
+                             count_show_hn_titles, count_poll_titles)
 
 print("TASK 3.2 COMPLETE")

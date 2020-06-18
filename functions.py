@@ -5,6 +5,7 @@
 # --------------------------------------------------------
 
 import math
+import os
 
 import numpy as np
 
@@ -14,7 +15,8 @@ import word
 # Remove unwanted characters from beginning and end of string and then add them to a list.
 def clean_words(title):
     words = title.split()
-    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", "«", "»", " ", "‍‍‍", "   ", ":", ".", "?", "!", "&", "=", "@",
+    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", "«", "»", " ", "‍‍‍", "   ", ":", ".", "?", "!", "&", "=",
+                   "@",
                    "'", "‘", "’", "`", '"', "“", "”", ",", "–", "—", "-", "^", "/", "\\", "", "\n", "\t"]
     clean = []
 
@@ -49,7 +51,8 @@ def clean_words(title):
 # Remove unwanted characters and return the title as a single string with all unwanted characters removed.
 def clean_title(title):
     words = title.split()
-    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", "«", "»", " ", "‍‍‍", "   ", ":", ".", "?", "!", "&", "=", "@",
+    remove_word = ["(", ")", "[", "]", "{", "}", "<", ">", "«", "»", " ", "‍‍‍", "   ", ":", ".", "?", "!", "&", "=",
+                   "@",
                    "'", "‘", "’", "`", '"', "“", "”", ",", "–", "—", "-", "^", "/", "\\", "", "\n", "\t"]
     clean = ""
 
@@ -151,6 +154,114 @@ def count_poll_posts(words):
         total += freq
 
     return total
+
+
+# Calculates probabilities, creates model, and writes it to a file.
+def create_model_file(file_name, vocab):
+    vocab_size = len(vocab)
+
+    # These are how many words are in each post category, used for calculating probability.
+    count_story_words = count_story_posts(vocab)
+    count_ask_hn_words = count_ask_hn_posts(vocab)
+    count_show_hn_words = count_show_hn_posts(vocab)
+    count_poll_words = count_poll_posts(vocab)
+
+    if os.path.exists(file_name):
+        print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
+              "create a new one")
+        return
+    else:
+        print("Creating model file... ", end="")
+        count = 0
+
+        # Probabilities with 0.5 smoothing are calculated with the formula:
+        # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
+
+        with open(file_name, "w") as file:
+            for v in vocab:
+                count += 1
+                count_str = str(count)
+                word_content = v.content
+                freq_story = v.freq_story
+                prob_story = (freq_story + 0.5) / (count_story_words + vocab_size * 0.5)
+                freq_story = str(freq_story)
+                prob_story = str(prob_story)
+                freq_ask_hn = v.freq_ask_hn
+                prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size * 0.5)
+                freq_ask_hn = str(freq_ask_hn)
+                prob_ask_hn = str(prob_ask_hn)
+                freq_show_hn = v.freq_show_hn
+                prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size * 0.5)
+                freq_show_hn = str(freq_show_hn)
+                prob_show_hn = str(prob_show_hn)
+                freq_poll = v.freq_poll
+                prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size * 0.5)
+                freq_poll = str(freq_poll)
+                prob_poll = str(prob_poll)
+
+                file.write(count_str + "  " + word_content + "  " + freq_story + "  " + prob_story + "  " + freq_ask_hn
+                           + "  " + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  "
+                           + prob_poll + "\n")
+
+        print("Done\nModel file can be found in", file_name, "\n")
+
+
+# Read model file, iterate through testing set and predict the post type for each in an output file.
+def create_result_file(file_name, model_file, test_set, count_sty, count_ask, count_shw, count_pol):
+    if os.path.exists(file_name):
+        print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
+              "create a new one")
+        return
+    else:
+        print("Classifying testing set and creating result file... ", end="")
+        count = 0
+        count_tot = count_sty + count_ask + count_shw + count_pol
+        model_list = extract_model_data(model_file)
+
+        with open(file_name, "w") as file:
+            for key in test_set:
+                count += 1
+                post_title = key
+
+                # Compute the probability of each post type.
+                score_story = compute_score(key, model_list, "story", count_sty, count_tot)
+                score_ask_hn = compute_score(key, model_list, "ask_hn", count_ask, count_tot)
+                score_show_hn = compute_score(key, model_list, "show_hn", count_shw, count_tot)
+                score_poll = compute_score(key, model_list, "poll", count_pol, count_tot)
+
+                # Determine which probability is the highest.
+                score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
+                predicted_type = ""
+
+                if score_max == score_story:
+                    predicted_type = "story"
+                elif score_max == score_ask_hn:
+                    predicted_type = "ask_hn"
+                elif score_max == score_show_hn:
+                    predicted_type = "show_hn"
+                elif score_max == score_poll:
+                    predicted_type = "poll"
+
+                # Compare and see if the prediction was correct.
+                actual_type = test_set[key]
+
+                if actual_type == predicted_type:
+                    prediction_result = "right"
+                else:
+                    prediction_result = "wrong"
+
+                # Use all the information above and write to the file.
+                count_str = str(count)
+                score_story = str(score_story)
+                score_ask_hn = str(score_ask_hn)
+                score_show_hn = str(score_show_hn)
+                score_poll = str(score_poll)
+
+                file.write(count_str + "  " + post_title + "  " + predicted_type + "  " + score_story + "  "
+                           + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
+                           + prediction_result + "\n")
+
+        print("Done\nResult file can be found in", file_name, "\n")
 
 
 # Reads the model file and produces a 2D list with all of its data.
