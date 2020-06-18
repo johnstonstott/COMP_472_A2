@@ -8,6 +8,7 @@ import math
 import os
 
 import numpy as np
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 import word
 
@@ -141,6 +142,18 @@ def filter_vocabulary_by_length(vocab, min_len, max_len):
     return new_vocab
 
 
+def filter_vocabulary_by_frequency(vocab, freq_limit):
+    print(f"Reading existing vocabulary, removing words with frequency ≤ {freq_limit}... ", end="")
+    new_vocab = []
+
+    for i in range(len(vocab)):
+        if vocab[i].freq_total > freq_limit:
+            new_vocab.append(vocab[i])
+
+    print("Done\n")
+    return new_vocab
+
+
 # Goes through list and determines total number of words in story posts.
 def count_story_posts(words):
     total = 0
@@ -235,6 +248,38 @@ def create_model_file(file_name, vocab):
     print("Model file can be found in", file_name, "\n")
 
 
+# Does the same as the above function but returns a 2D list of the information instead of writing to a file.
+def create_model_list(vocab):
+    vocab_size = len(vocab)
+    count = 0
+    model_list = []
+
+    # These are how many words are in each post category, used for calculating probability.
+    count_story_words = count_story_posts(vocab)
+    count_ask_hn_words = count_ask_hn_posts(vocab)
+    count_show_hn_words = count_show_hn_posts(vocab)
+    count_poll_words = count_poll_posts(vocab)
+
+    # Probabilities with 0.5 smoothing are calculated with the formula:
+    # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
+    for v in vocab:
+        count += 1
+        word_content = v.content
+        freq_story = v.freq_story
+        prob_story = (freq_story + 0.5) / (count_story_words + vocab_size * 0.5)
+        freq_ask_hn = v.freq_ask_hn
+        prob_ask_hn = (freq_ask_hn + 0.5) / (count_ask_hn_words + vocab_size * 0.5)
+        freq_show_hn = v.freq_show_hn
+        prob_show_hn = (freq_show_hn + 0.5) / (count_show_hn_words + vocab_size * 0.5)
+        freq_poll = v.freq_poll
+        prob_poll = (freq_poll + 0.5) / (count_poll_words + vocab_size * 0.5)
+        word_list = [count, word_content, freq_story, prob_story, freq_ask_hn, prob_ask_hn, freq_show_hn, prob_show_hn,
+                     freq_poll, prob_poll]
+        model_list.append(word_list)
+
+    return model_list
+
+
 def create_vocabulary_file(file_name, vocab):
     if os.path.exists(file_name):
         print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
@@ -306,6 +351,39 @@ def create_result_file(file_name, model_file, test_set, count_sty, count_ask, co
 
         print("Done")
     print("Result file can be found in", file_name, "\n")
+
+
+def create_result_lists(model_list, test_set, count_sty, count_ask, count_shw, count_pol):
+    count_tot = count_sty + count_ask + count_shw + count_pol
+    predicted_results = []
+    actual_results = []
+
+    for key in test_set:
+        # Compute the probability of each post type.
+        score_story = compute_score(key, model_list, "story", count_sty, count_tot)
+        score_ask_hn = compute_score(key, model_list, "ask_hn", count_ask, count_tot)
+        score_show_hn = compute_score(key, model_list, "show_hn", count_shw, count_tot)
+        score_poll = compute_score(key, model_list, "poll", count_pol, count_tot)
+
+        # Determine which probability is the highest.
+        score_max = max(score_story, score_ask_hn, score_show_hn, score_poll)
+        predicted_type = ""
+
+        if score_max == score_story:
+            predicted_type = "story"
+        elif score_max == score_ask_hn:
+            predicted_type = "ask_hn"
+        elif score_max == score_show_hn:
+            predicted_type = "show_hn"
+        elif score_max == score_poll:
+            predicted_type = "poll"
+
+        # Add the predicted post type and actual post type to the same position in their respective lists.
+        predicted_results.append(predicted_type)
+        actual_results.append(test_set[key])
+
+    # Return both lists.
+    return [predicted_results, actual_results]
 
 
 # Reads the model file and produces a 2D list with all of its data.
@@ -380,3 +458,21 @@ def compute_score(title, model_data, post_type, type_count, total_count):
         score += np.log10(prob_word_given_type)
 
     return score
+
+
+# Takes lists to store the results, and a list containing the actual/predicted, calculates results and stores them.
+def compute_metrics(result_list, acc_list, rcl_list, prs_list, fms_list):
+    predicted_list = result_list[0]
+    actual_list = result_list[1]
+
+    # Calculate accuracy.
+    acc_list.append(accuracy_score(predicted_list, actual_list))
+
+    # Calculate recall.
+    rcl_list.append(recall_score(predicted_list, actual_list, average="macro"))
+
+    # Calculate precision.
+    prs_list.append(precision_score(predicted_list, actual_list, average="macro"))
+
+    # Calculate f-measure.
+    fms_list.append(f1_score(predicted_list, actual_list, average="macro"))

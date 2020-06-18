@@ -14,24 +14,9 @@ import os
 import sys
 
 from matplotlib import pyplot as plt
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 import functions
 import word
-
-# x = ["freq = 1", "freq ≤ 5", "freq ≤ 10", "freq ≤ 15", "freq ≤ 20"]
-# y_1 = [60, 70, 80, 90, 100]
-# y_2 = [50, 55, 60, 65, 70]
-# y_3 = [90, 95, 80, 85, 100]
-# y_4 = [10, 20, 30, 40, 70]
-# plt.plot(x, y_1, marker="o", label="one")
-# plt.plot(x, y_2, marker="o", label="two")
-# plt.plot(x, y_3, marker="o", label="three")
-# plt.plot(x, y_4, marker="o", label="four")
-# plt.legend(loc="upper left")
-# plt.xlabel("X's")
-# plt.ylabel("Y's")
-# plt.show()
 
 # Task 1: Extract data and build model.
 print("STARTING TASK 1\n")
@@ -141,4 +126,39 @@ result_file_32 = "wordlength-result.txt"
 functions.create_result_file(result_file_32, model_file_32, testing_set, count_story_titles, count_ask_hn_titles,
                              count_show_hn_titles, count_poll_titles)
 
-print("TASK 3.2 COMPLETE")
+print("TASK 3.2 COMPLETE\n")
+
+# Task 3.3: Infrequent word filtering.
+print("STARTING TASK 3.3\n")
+
+# Lists for keeping track of metrics.
+accuracy = []
+recall = []
+precision = []
+f_measure = []
+
+# To keep track of how many words remain in the vocabulary at each stage.
+vocab_sizes = []
+
+# The frequencies we want to filter.
+min_freqs = [1, 5, 10, 15, 20]
+
+# Filter vocabulary, create model, generate results, and compute metrics for all specified frequencies.
+for f in min_freqs:
+    vocabulary_33_1 = functions.filter_vocabulary_by_frequency(vocabulary_sorted, f)
+    vocab_sizes.append(str(len(vocabulary_33_1)) + " words\n(Freq ≤ " + str(f) + " removed)")
+    model_list_33_1 = functions.create_model_list(vocabulary_33_1)
+    result_list_33_1 = functions.create_result_lists(model_list_33_1, testing_set, count_story_titles,
+                                                     count_ask_hn_titles, count_show_hn_titles, count_poll_titles)
+    functions.compute_metrics(result_list_33_1, accuracy, recall, precision, f_measure)
+
+# Show the graph.
+plt.plot(vocab_sizes, accuracy, marker="o", label="Accuracy")
+plt.plot(vocab_sizes, recall, marker="o", label="Recall")
+plt.plot(vocab_sizes, precision, marker="o", label="Precision")
+plt.plot(vocab_sizes, f_measure, marker="o", label="F-Measure")
+plt.title("Performance of classifier low frequencies removed")
+plt.xlabel("Words in vocabulary")
+plt.ylabel("Performance")
+plt.legend(loc="best")
+plt.show()
