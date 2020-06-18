@@ -14,6 +14,7 @@ import os
 import sys
 
 from matplotlib import pyplot as plt
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 import functions
 import word
@@ -90,17 +91,7 @@ functions.create_model_file(model_file, vocabulary_sorted)
 
 # Create vocabulary.txt file.
 vocab_file = "vocabulary.txt"
-if os.path.exists(vocab_file):
-    print("The file", vocab_file, "already exists, so not creating a new one")
-else:
-    print("Creating vocabulary file... ", end="")
-
-    with open(vocab_file, "w") as file:
-        for v in vocabulary_sorted:
-            file.write(v.content + "\n")
-
-    print("Done")
-print("Vocabulary file can be found in vocabulary.txt\n")
+functions.create_vocabulary_file(vocab_file, vocabulary_sorted)
 
 print("TASK 1 COMPLETE\n")
 
@@ -118,22 +109,11 @@ print("TASK 2 COMPLETE\n")
 # Task 3.1: Stop-word filtering.
 print("STARTING TASK 3.1\n")
 
-# Stores Word objects that fit the criteria of task 3.1.
-vocabulary_31 = []
-
+# Filter stopwords from complete vocabulary and store them in a new vocabulary.
 stopwords_file = "stopwords.txt"
-stopwords = functions.extract_stopwords(stopwords_file)
+vocabulary_31 = functions.filter_vocabulary_by_stopword(vocabulary_sorted, stopwords_file)
 
-# Creating new vocabulary using the one defined in task 1.
-print("Reading existing vocabulary, removing stop words, creating new vocabulary... ", end="")
-
-# Check if each one is equivalent to any stopwords, if so then don't include it in the new vocabulary.
-for i in range(len(vocabulary_sorted)):
-    if vocabulary_sorted[i].content not in stopwords:
-        vocabulary_31.append(vocabulary_sorted[i])
-
-print("Done\n")
-
+# Create the model file from the vocabulary.
 model_file_31 = "stopword-model.txt"
 functions.create_model_file(model_file_31, vocabulary_31)
 
@@ -147,19 +127,10 @@ print("TASK 3.1 COMPLETE\n")
 # Task 3.2: Word length filtering.
 print("STARTING TASK 3.2\n")
 
-# Stores Word objects from vocabulary fitting the criteria of task 3.2.
-vocabulary_32 = []
+# Get Word objects from vocabulary fitting the criteria of task 3.2.
 min_length = 2
 max_length = 9
-
-print("Reading existing vocabulary, removing words outside of length limits, creating new vocabulary... ", end="")
-
-# Check word lengths and only add ones within the accepted range.
-for i in range(len(vocabulary_sorted)):
-    if min_length < len(vocabulary_sorted[i].content) < max_length:
-        vocabulary_32.append(vocabulary_sorted[i])
-
-print("Done\n")
+vocabulary_32 = functions.filter_vocabulary_by_length(vocabulary_sorted, min_length, max_length)
 
 # Create the model file.
 model_file_32 = "wordlength-model.txt"

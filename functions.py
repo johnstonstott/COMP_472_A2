@@ -112,6 +112,35 @@ def add_to_vocabulary(words, post_type, vocab):
             vocab.append(new_word)
 
 
+# Takes a file of stopwords and an existing vocabulary, returns a new vocabulary with the stopwords removed.
+def filter_vocabulary_by_stopword(vocab, stopwords_file):
+    print("Reading existing vocabulary, removing stop words, creating new vocabulary... ", end="")
+    stopwords = extract_stopwords(stopwords_file)
+    new_vocab = []
+
+    # Check if each one is equivalent to any stopwords, if so then don't include it in the new vocabulary.
+    for i in range(len(vocab)):
+        if vocab[i].content not in stopwords:
+            new_vocab.append(vocab[i])
+
+    print("Done\n")
+    return new_vocab
+
+
+# Takes a min and max length and existing vocabulary, returns a new vocabulary containing only words within that length.
+def filter_vocabulary_by_length(vocab, min_len, max_len):
+    print("Reading existing vocabulary, removing words outside of length limits, creating new vocabulary... ", end="")
+    new_vocab = []
+
+    # Check lengths of each word and only add ones within the accepted range.
+    for i in range(len(vocab)):
+        if min_len < len(vocab[i].content) < max_len:
+            new_vocab.append(vocab[i])
+
+    print("Done\n")
+    return new_vocab
+
+
 # Goes through list and determines total number of words in story posts.
 def count_story_posts(words):
     total = 0
@@ -169,7 +198,6 @@ def create_model_file(file_name, vocab):
     if os.path.exists(file_name):
         print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
               "create a new one")
-        return
     else:
         print("Creating model file... ", end="")
         count = 0
@@ -203,7 +231,23 @@ def create_model_file(file_name, vocab):
                            + "  " + prob_ask_hn + "  " + freq_show_hn + "  " + prob_show_hn + "  " + freq_poll + "  "
                            + prob_poll + "\n")
 
-        print("Done\nModel file can be found in", file_name, "\n")
+        print("Done")
+    print("Model file can be found in", file_name, "\n")
+
+
+def create_vocabulary_file(file_name, vocab):
+    if os.path.exists(file_name):
+        print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
+              "create a new one")
+    else:
+        print("Creating vocabulary file... ", end="")
+
+        with open(file_name, "w") as file:
+            for v in vocab:
+                file.write(v.content + "\n")
+
+        print("Done")
+    print("Vocabulary file can be found in", file_name, "\n")
 
 
 # Read model file, iterate through testing set and predict the post type for each in an output file.
@@ -211,7 +255,6 @@ def create_result_file(file_name, model_file, test_set, count_sty, count_ask, co
     if os.path.exists(file_name):
         print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
               "create a new one")
-        return
     else:
         print("Classifying testing set and creating result file... ", end="")
         count = 0
@@ -261,7 +304,8 @@ def create_result_file(file_name, model_file, test_set, count_sty, count_ask, co
                            + score_ask_hn + "  " + score_show_hn + "  " + score_poll + "  " + actual_type + "  "
                            + prediction_result + "\n")
 
-        print("Done\nResult file can be found in", file_name, "\n")
+        print("Done")
+    print("Result file can be found in", file_name, "\n")
 
 
 # Reads the model file and produces a 2D list with all of its data.

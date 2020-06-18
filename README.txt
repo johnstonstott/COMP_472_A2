@@ -4,8 +4,9 @@ For COMP 472 Section ABIX – Summer 2020
 
 Required Packages
 -----------------
-- Matplotlib
-- Numpy
+- matplotlib
+- numpy
+- scikit-learn
 
 Required Version
 ----------------
