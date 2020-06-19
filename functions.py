@@ -8,6 +8,7 @@ import math
 import os
 
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
 import word
@@ -142,6 +143,7 @@ def filter_vocabulary_by_length(vocab, min_len, max_len):
     return new_vocab
 
 
+# Take an existing vocabulary and return a new vocabulary with all words removed below the frequency limit.
 def filter_vocabulary_by_frequency(vocab, freq_limit):
     print(f"Reading existing vocabulary, removing words with frequency ≤ {freq_limit}... ", end="")
     new_vocab = []
@@ -150,7 +152,23 @@ def filter_vocabulary_by_frequency(vocab, freq_limit):
         if vocab[i].freq_total > freq_limit:
             new_vocab.append(vocab[i])
 
-    print("Done\n")
+    print("Done")
+    return new_vocab
+
+
+# Filters existing vocabulary by removing words above with frequency above a certain percent.
+def filter_vocabulary_by_frequency_percent(orig_vocab, trimmed_vocab, freq_percent, freq_list):
+    print(f"Reading existing vocabulary, removing the top {int(freq_percent * 100)}% of words... ", end="")
+
+    # Determine what frequency is the maximum allowed.
+    max_freq = freq_list[math.floor(freq_percent * len(orig_vocab)) - 1]
+    new_vocab = []
+
+    for i in range(len(trimmed_vocab)):
+        if trimmed_vocab[i].freq_total < max_freq:
+            new_vocab.append(trimmed_vocab[i])
+
+    print("Done")
     return new_vocab
 
 
@@ -198,6 +216,17 @@ def count_poll_posts(words):
     return total
 
 
+# Returns a sorted list of all frequencies in the vocabulary which will be used to determine the top 5%, 10%, etc.
+def get_frequency_list(vocab):
+    frequencies = []
+
+    for v in vocab:
+        frequencies.append(v.freq_total)
+
+    frequencies.sort(reverse=True)
+    return frequencies
+
+
 # Calculates probabilities, creates model, and writes it to a file.
 def create_model_file(file_name, vocab):
     vocab_size = len(vocab)
@@ -215,7 +244,7 @@ def create_model_file(file_name, vocab):
         print("Creating model file... ", end="")
         count = 0
 
-        # Probabilities with 0.5 smoothing are calculated with the formula:
+        # Conditional probabilities with 0.5 smoothing are calculated with the formula:
         # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
 
         with open(file_name, "w") as file:
@@ -250,6 +279,7 @@ def create_model_file(file_name, vocab):
 
 # Does the same as the above function but returns a 2D list of the information instead of writing to a file.
 def create_model_list(vocab):
+    print("Creating model... ", end="")
     vocab_size = len(vocab)
     count = 0
     model_list = []
@@ -260,7 +290,7 @@ def create_model_list(vocab):
     count_show_hn_words = count_show_hn_posts(vocab)
     count_poll_words = count_poll_posts(vocab)
 
-    # Probabilities with 0.5 smoothing are calculated with the formula:
+    # Conditional probabilities with 0.5 smoothing are calculated with the formula:
     # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
     for v in vocab:
         count += 1
@@ -277,9 +307,11 @@ def create_model_list(vocab):
                      freq_poll, prob_poll]
         model_list.append(word_list)
 
+    print("Done")
     return model_list
 
 
+# Write each word of a vocabulary in a file, each on a new line.
 def create_vocabulary_file(file_name, vocab):
     if os.path.exists(file_name):
         print("The file", file_name, "already exists, so not creating a new one, delete or rename", file_name, "to "
@@ -353,7 +385,10 @@ def create_result_file(file_name, model_file, test_set, count_sty, count_ask, co
     print("Result file can be found in", file_name, "\n")
 
 
+# Takes a list with all model info, test set, and counts of post types, returns a list with the predicted and actual
+# results for classifications.
 def create_result_lists(model_list, test_set, count_sty, count_ask, count_shw, count_pol):
+    print("Classifying testing set... ", end="")
     count_tot = count_sty + count_ask + count_shw + count_pol
     predicted_results = []
     actual_results = []
@@ -383,6 +418,7 @@ def create_result_lists(model_list, test_set, count_sty, count_ask, count_shw, c
         actual_results.append(test_set[key])
 
     # Return both lists.
+    print("Done")
     return [predicted_results, actual_results]
 
 
@@ -462,6 +498,7 @@ def compute_score(title, model_data, post_type, type_count, total_count):
 
 # Takes lists to store the results, and a list containing the actual/predicted, calculates results and stores them.
 def compute_metrics(result_list, acc_list, rcl_list, prs_list, fms_list):
+    print("Calculating metrics... ", end="")
     predicted_list = result_list[0]
     actual_list = result_list[1]
 
@@ -476,3 +513,23 @@ def compute_metrics(result_list, acc_list, rcl_list, prs_list, fms_list):
 
     # Calculate f-measure.
     fms_list.append(f1_score(predicted_list, actual_list, average="macro"))
+
+    print("Done\n")
+
+
+# Use matplotlib to show the graph of the four performance indicators.
+def create_and_show_graph(x_vals, y_vals_acc, y_vals_rcl, y_vals_prc, y_vals_fms, title):
+    print("When you are done viewing the graph, please close it to continue")
+
+    plt.plot(x_vals, y_vals_acc, marker="o", label="Accuracy")
+    plt.plot(x_vals, y_vals_rcl, marker="o", label="Recall")
+    plt.plot(x_vals, y_vals_prc, marker="o", label="Precision")
+    plt.plot(x_vals, y_vals_fms, marker="o", label="F-Measure")
+    plt.title(title)
+    plt.xlabel("Words in vocabulary")
+    plt.ylabel("Performance")
+    plt.legend(loc="best")
+
+    print("Displaying results... ", end="")
+    plt.show()
+    print("Done\n")

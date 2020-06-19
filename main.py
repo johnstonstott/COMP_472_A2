@@ -4,22 +4,18 @@
 # For COMP 472 Section ABIX – Summer 2020
 # --------------------------------------------------------
 
-# Permitted libs: Numpy, Pandas, sklearn, Nltk, Matplotlib, math and sys
-
-# Row | Object ID | Title | Post Type | Author | Created At | URL | Points | Number of comments | year
-# 0   | 1         | 2     | 3         | 4      | 5          | 6   | 7      | 8                  | 9
-
 import csv
 import os
 import sys
 
-from matplotlib import pyplot as plt
-
 import functions
-import word
+
+# Get name of file from which to build model and vocabulary.
+data_set_file = input("Enter the file name for the data set (e.g.: hns_2018_2019.csv):\n")
+testing_set_file = input("\nEnter the file name for the testing set (e.g.: hns_2018_2019.csv):\n")
 
 # Task 1: Extract data and build model.
-print("STARTING TASK 1\n")
+print("\nSTARTING TASK 1\n")
 
 # vocabulary is a list of Word objects for title words, used for creating the model.
 vocabulary = []
@@ -32,15 +28,14 @@ count_ask_hn_titles = 0
 count_show_hn_titles = 0
 count_poll_titles = 0
 
-csv_file = "hns_2018_2019.csv"
-
-if not os.path.exists(csv_file):
-    print("File ", csv_file, "not found. Please make sure it is in the same directory as main.py")
+# For model.
+if not os.path.exists(data_set_file):
+    print("File ", data_set_file, "not found. Please make sure it is in the same directory as main.py")
     print("Program terminating.")
     sys.exit(0)
 
-with open(csv_file, "r") as file:
-    print(f"Opening {csv_file}, reading data, creating vocabulary, creating testing set... ", end="")
+with open(data_set_file, "r") as file:
+    print(f"Opening {data_set_file}, reading data, creating vocabulary... ", end="")
     reader = csv.reader(file)
 
     # Iterate through data set and add to the appropriate list depending on the year.
@@ -60,7 +55,20 @@ with open(csv_file, "r") as file:
             elif post_type == "poll":
                 count_poll_titles += 1
 
-        elif entry[5][0:4] == "2019":
+    print("Done\n")
+
+# For testing set.
+if not os.path.exists(testing_set_file):
+    print("File ", testing_set_file, "not found. Please make sure it is in the same directory as main.py")
+    print("Program terminating.")
+    sys.exit(0)
+
+with open(testing_set_file, "r") as file:
+    print(f"Opening {testing_set_file}, reading data, creating testing set... ", end="")
+    reader = csv.reader(file)
+
+    for entry in reader:
+        if entry[5][0:4] == "2019":
             title_string = functions.clean_title(entry[2])
             post_type = entry[3]
             testing_set.update([(title_string.strip(), post_type)])
@@ -153,12 +161,33 @@ for f in min_freqs:
     functions.compute_metrics(result_list_33_1, accuracy, recall, precision, f_measure)
 
 # Show the graph.
-plt.plot(vocab_sizes, accuracy, marker="o", label="Accuracy")
-plt.plot(vocab_sizes, recall, marker="o", label="Recall")
-plt.plot(vocab_sizes, precision, marker="o", label="Precision")
-plt.plot(vocab_sizes, f_measure, marker="o", label="F-Measure")
-plt.title("Performance of classifier low frequencies removed")
-plt.xlabel("Words in vocabulary")
-plt.ylabel("Performance")
-plt.legend(loc="best")
-plt.show()
+functions.create_and_show_graph(vocab_sizes, accuracy, recall, precision, f_measure, "Performance of classifier with "
+                                                                                     "low frequencies removed")
+
+# Using the same lists for the same purposes, so clear them
+accuracy = []
+recall = []
+precision = []
+f_measure = []
+vocab_sizes = []
+
+# Frequency percents that we will use.
+freq_percents = [0.05, 0.10, 0.15, 0.20, 0.25]
+freq_list = functions.get_frequency_list(vocabulary_sorted)
+vocabulary_33_2 = vocabulary_sorted
+for f in freq_percents:
+    vocabulary_33_2 = functions.filter_vocabulary_by_frequency_percent(vocabulary_sorted, vocabulary_33_2, f, freq_list)
+    vocab_sizes.append(str(len(vocabulary_33_2)) + " words\n(Top " + str(int(f * 100)) + "% removed)")
+    model_list_33_2 = functions.create_model_list(vocabulary_33_2)
+    result_list_33_2 = functions.create_result_lists(model_list_33_2, testing_set, count_story_titles,
+                                                     count_ask_hn_titles, count_show_hn_titles, count_poll_titles)
+    functions.compute_metrics(result_list_33_2, accuracy, recall, precision, f_measure)
+
+# Show the graph for this classifier.
+functions.create_and_show_graph(vocab_sizes, accuracy, recall, precision, f_measure, "Performance of classifier with "
+                                                                                     "high frequency percents removed")
+
+print("TASK 3.3 COMPLETE\n")
+
+print("Program terminating")
+sys.exit(0)
