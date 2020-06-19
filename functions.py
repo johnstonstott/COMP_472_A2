@@ -106,8 +106,10 @@ def get_model_index(title_word, model_list):
 def add_to_vocabulary(words, post_type, vocab):
     for w in words:
         index = get_word_index(w, vocab)
+        # Word exists, increment its frequency.
         if index != -1:
             vocab[index].increment_count(post_type)
+        # Word does not exist, add it.
         else:
             new_word = word.Word(w)
             new_word.increment_count(post_type)
@@ -246,7 +248,6 @@ def create_model_file(file_name, vocab):
 
         # Conditional probabilities with 0.5 smoothing are calculated with the formula:
         # probability_of_wi = (count_of_wi + 0.5) / (number_of_words_in_post_type + (vocabulary_size * 0.5))
-
         with open(file_name, "w") as file:
             for v in vocab:
                 count += 1
@@ -521,6 +522,7 @@ def compute_metrics(result_list, acc_list, rcl_list, prs_list, fms_list):
 def create_and_show_graph(x_vals, y_vals_acc, y_vals_rcl, y_vals_prc, y_vals_fms, title):
     print("When you are done viewing the graph, please close it to continue")
 
+    # Accuracy, recall, precision, f-measure are 4 distinct lines on the graph.
     plt.plot(x_vals, y_vals_acc, marker="o", label="Accuracy")
     plt.plot(x_vals, y_vals_rcl, marker="o", label="Recall")
     plt.plot(x_vals, y_vals_prc, marker="o", label="Precision")

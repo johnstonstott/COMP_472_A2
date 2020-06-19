@@ -5,6 +5,7 @@
 # --------------------------------------------------------
 
 
+# Word objects used in the vocabulary, keep track of the word itself and the number of occurrences among post types.
 class Word:
     def __init__(self, content):
         self.content = content
