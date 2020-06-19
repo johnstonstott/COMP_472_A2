@@ -4,20 +4,18 @@
 # For COMP 472 Section ABIX – Summer 2020
 # --------------------------------------------------------
 
-# Permitted libs: Numpy, Pandas, sklearn, Nltk, Matplotlib, math and sys
-
-# Row | Object ID | Title | Post Type | Author | Created At | URL | Points | Number of comments | year
-# 0   | 1         | 2     | 3         | 4      | 5          | 6   | 7      | 8                  | 9
-
 import csv
 import os
 import sys
 
 import functions
-import word
+
+# Get name of file from which to build model and vocabulary.
+data_set_file = input("Enter the file name for the data set (e.g.: hns_2018_2019.csv):\n")
+testing_set_file = input("\nEnter the file name for the testing set (e.g.: hns_2018_2019.csv):\n")
 
 # Task 1: Extract data and build model.
-print("STARTING TASK 1\n")
+print("\nSTARTING TASK 1\n")
 
 # vocabulary is a list of Word objects for title words, used for creating the model.
 vocabulary = []
@@ -30,15 +28,14 @@ count_ask_hn_titles = 0
 count_show_hn_titles = 0
 count_poll_titles = 0
 
-csv_file = "hns_2018_2019.csv"
-
-if not os.path.exists(csv_file):
-    print("File ", csv_file, "not found. Please make sure it is in the same directory as main.py")
+# For model.
+if not os.path.exists(data_set_file):
+    print("File ", data_set_file, "not found. Please make sure it is in the same directory as main.py")
     print("Program terminating.")
     sys.exit(0)
 
-with open(csv_file, "r") as file:
-    print(f"Opening {csv_file}, reading data, creating vocabulary, creating testing set... ", end="")
+with open(data_set_file, "r") as file:
+    print(f"Opening {data_set_file}, reading data, creating vocabulary... ", end="")
     reader = csv.reader(file)
 
     # Iterate through data set and add to the appropriate list depending on the year.
@@ -58,7 +55,20 @@ with open(csv_file, "r") as file:
             elif post_type == "poll":
                 count_poll_titles += 1
 
-        elif entry[5][0:4] == "2019":
+    print("Done\n")
+
+# For testing set.
+if not os.path.exists(testing_set_file):
+    print("File ", testing_set_file, "not found. Please make sure it is in the same directory as main.py")
+    print("Program terminating.")
+    sys.exit(0)
+
+with open(testing_set_file, "r") as file:
+    print(f"Opening {testing_set_file}, reading data, creating testing set... ", end="")
+    reader = csv.reader(file)
+
+    for entry in reader:
+        if entry[5][0:4] == "2019":
             title_string = functions.clean_title(entry[2])
             post_type = entry[3]
             testing_set.update([(title_string.strip(), post_type)])
