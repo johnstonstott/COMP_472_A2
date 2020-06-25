@@ -34,7 +34,7 @@ IMPORTANT: The program will generate output files ONLY if these files DO NOT alr
 - wordlength-model.txt
 - wordlength-result.txt
 
-If you would like to see the program generate new output files yourself, you must either delete the existing output files, rename the existing output files to something other than the above list, or move the existing output files to another directory, not in "data".
+If you would like to see the program generate new output files yourself, you must either delete the existing output files, rename the existing output files to something other than the above list, or move the existing output files to another directory, not in "src".
 
 Example Program Execution
 -------------------------
