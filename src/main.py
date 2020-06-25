@@ -12,7 +12,9 @@ import functions
 
 # Get name of file from which to build model and vocabulary.
 data_set_file = input("Enter the file name for the data set (e.g.: hns_2018_2019.csv):\n")
+data_set_file = "../data/" + data_set_file
 testing_set_file = input("\nEnter the file name for the testing set (e.g.: hns_2018_2019.csv):\n")
+testing_set_file = "../data/" + testing_set_file
 
 # Task 1: Extract data and build model.
 print("\nSTARTING TASK 1\n")
